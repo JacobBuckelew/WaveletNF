@@ -21,6 +21,7 @@ class DiscreteWaveletTransform(nn.Module):
         self.output_length = math.ceil(input_length / 2)
 
 
+    # pad zeros to ensure unique inverses
     def zero_padding(self, x: torch.Tensor) -> torch.Tensor:
         # inputs are of shape (Dimension, Seq_Length). Pad zeros to the last dimension
         output = torch.cat((x, torch.zeros(x.shape[-2], self.input_length - x.shape[-1])), -1)
@@ -36,21 +37,28 @@ class DiscreteWaveletTransform(nn.Module):
         A, D = pywt.dwt(x, wavelet=self.wavelet)
         # Assume we are using an Orthonormal Wavelet family (e.g. haar). Then, Determinant of DWT is 1
         log_det = 0
-        #self.A = 
 
         return log_det, (torch.Tensor(A),torch.Tensor(D))
 
-    def inverse(self, x: torch.Tensor) -> torch.Tensor:
-        assert x.shape[-1] == self.output_length, f"Input sequence length is {x.shape[-1]}, but should be {self.output_length} for computing the inverse DWT"
+    def inverse(self, a: torch.Tensor, d: torch.Tensor) -> torch.Tensor:
+        # check input size
+        assert a.shape[-1] == self.output_length, f"Input sequence length is {x.shape[-1]}, but should be {self.output_length} for computing the inverse DWT"
 
+        y = pywt.idwt(a.numpy(), d.numpy(), wavelet=self.wavelet)
+        # Assume we are using an Orthonormal Wavelet family (e.g. haar). Then, Determinant of Inverse DWT is 1
+        log_det = 0
 
+        return log_det, torch.Tensor(y)
 
 if __name__ == "__main__":
-    DWT = DiscreteWaveletTransform(wavelet="haar", input_length=64, level=4)
+    DWT = DiscreteWaveletTransform(wavelet="haar", input_length=64)
     x = torch.rand((10,50))
+    print("x:", x)
     log_det, y = DWT(x)
-    print(y[0])
-    print(y[1].shape)
+    #print(y[0])
+    #print(y[1].shape)
+    log_det_inverse, y = DWT.inverse(y[0], y[1])
+    print("reconstructed x:", x)
 
 
 
