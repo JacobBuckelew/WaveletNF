@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from NF import RealNVP, BatchNormLayer, CouplingLayer
-from Wavelet import DiscreteWaveletTransform
-from Encoder import Encoder
+from model.NF import BatchNormLayer, CouplingLayer
+from model.Wavelet import DiscreteWaveletTransform
+from model.Encoder import Encoder
 
 """
     WaveletEnhancedCouplingLayer defines the primary model architecture used in our paper.
@@ -26,7 +26,8 @@ class WaveletEnhancedCouplingLayer(nn.Module):
                 wavelet,
                 N,
                 n_heads,
-                num_features, 
+                num_features,
+                num_entities, 
                 st_units,
                 mask, 
                 b_norm= True, 
@@ -36,11 +37,12 @@ class WaveletEnhancedCouplingLayer(nn.Module):
 
         self.hidden_d = hidden_d
         self.wavelet = wavelet
+        self.num_entities = num_entities
         self.N = N
         self.num_features = num_features
         # define the primary modules of a wavelet enhanced coupling flow
         self.dwt = DiscreteWaveletTransform(wavelet=wavelet, input_length=N)
-        self.encoder = Encoder(model_d=num_features, hidden_d=hidden_d, n_heads=n_heads)
+        self.encoder = Encoder(model_d=int(N/2), num_features = num_features,hidden_d=hidden_d, n_heads=n_heads)
         self.coupling_layer = CouplingLayer(num_features, mask, st_units, cond_size=hidden_d)
         
         if b_norm:
@@ -50,26 +52,34 @@ class WaveletEnhancedCouplingLayer(nn.Module):
 
     # forward pass performs density estimation
     def forward(self, x):
+
+        if len(x.shape) == 2:
+            x = x.reshape(-1, self.num_entities, int(self.N/2), self.num_features)
+        #print("shape:", shape)
         # y is a tuple:  (Approximation, Detail)
         # DWT
         total_log_det = 0
+        #print(x.shape)
         log_det, y = self.dwt(x)
         total_log_det += log_det
 
         # Attention
         # Transpose detail coefficients to get feature tokens
-        D = y[1].T
+        D = y[1]
+        #print(D.shape)
         h = self.encoder.compute_attention(D)
         self.attention = h
 
         # perform RealNVP on Approximation coefficients, conditioning on Detail Coefficient self-attention
-        log_det, output = self.coupling_layer(y[0], y=h.T)
+        h = h.reshape(-1, self.hidden_d)
+        y = y[0].reshape(-1, self.num_features)
+        #print(y.shape)
+        #print(h.shape)
+        output, log_det = self.coupling_layer(y, condition=h)
         total_log_det += log_det
-
-        # Batch Norm
-        #TODO Finish the rest of this
+        #print(total_log_det.shape)
         if self.batch_norm:
-            log_det, output = self.batch_norm(output)
+            output, log_det = self.batch_norm(output)
             total_log_det += log_det
 
         return total_log_det, output

@@ -14,16 +14,16 @@ import torch.nn.functional as F
 class MultiheadAttentionLayer(nn.Module):
   def __init__(self, model_d: int, hidden_d, n_heads: int):
     super(MultiheadAttentionLayer, self).__init__()
+    model_d = 1
     self.model_d = model_d
     self.hidden_d = hidden_d
     self.n_heads = n_heads
     self.head_d = hidden_d // n_heads
-
     self.head = nn.Linear(model_d, 3 * hidden_d)
-    self.W_o = nn.Linear(model_d, model_d)
+    self.W_o = nn.Linear(hidden_d, hidden_d)
 
 
-  def scaled_dot_product_att(self, queries: Tensor, keys: Tensor, values: Tensor, attention=False) -> (Tensor, Tensor):  
+  def scaled_dot_product_att(self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, attention=True) -> (torch.Tensor, torch.Tensor):  
     d_k = queries.size()[-1]
     logits = torch.matmul(queries, keys.transpose(-2, -1))
     logits = logits/math.sqrt(d_k)
@@ -35,9 +35,12 @@ class MultiheadAttentionLayer(nn.Module):
     else:
         return output, None
 
-  def forward(self, x: Tensor, attention=False) -> (Tensor, Tensor):
-    batch, length, dim = x.size()
-    projection = self.head(x)
+  def forward(self, x: torch.Tensor, attention=True) -> (torch.Tensor, torch.Tensor):
+    shape = x.size()
+    x_shape = x.reshape((shape[0] * shape[2], shape[1], -1))
+    batch, length, dim = x_shape.size()
+    #print("x shape:", x_shape.shape)
+    projection = self.head(x_shape)
 
     projection = projection.reshape(batch, length, self.n_heads, 3 * self.head_d)
     projection = projection.permute(0,2,1,3)
@@ -47,7 +50,9 @@ class MultiheadAttentionLayer(nn.Module):
     values = values.permute(0,2,1,3)
     values = values.reshape(batch, length, self.hidden_d)
     output = self.W_o(values)
+    #print("output:", output.shape)
     if attention:
         return output, A
     else:
         return output, None
+    

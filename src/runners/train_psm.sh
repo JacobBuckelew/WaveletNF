@@ -1,0 +1,16 @@
+for seed in {6..10}
+do
+    CUDA_VISIBLE_DEVICES=0 python3 ../train.py\
+        --batch_size=64\
+        --window_size=48\
+        --lr=0.001\
+        --num_blocks=4\
+        --st_units=16\
+        --epochs=100\
+        --dataset=PSM\
+        --wavelet_type=haar\
+        --N=64\
+        --heads=1\
+        --seed=${seed}\
+        --name=WaveletNF_psm_seed_${seed}
+done

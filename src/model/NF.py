@@ -105,6 +105,7 @@ class CouplingLayer(nn.Module):
     def conditioner(self, x, condition):
         if condition is not None:
             x = torch.concat((x, condition), axis= -1)
+        #print(x.shape)
         # perform affine coupling on x_[1:d]
         # scale function
         scale_x = x
