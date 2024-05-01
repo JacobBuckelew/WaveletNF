@@ -14,13 +14,12 @@ import torch.nn.functional as F
 class MultiheadAttentionLayer(nn.Module):
   def __init__(self, model_d: int, hidden_d, n_heads: int):
     super(MultiheadAttentionLayer, self).__init__()
-    model_d = 1
     self.model_d = model_d
     self.hidden_d = hidden_d
     self.n_heads = n_heads
     self.head_d = hidden_d // n_heads
     self.head = nn.Linear(model_d, 3 * hidden_d)
-    self.W_o = nn.Linear(hidden_d, hidden_d)
+    self.W_o = nn.Linear(hidden_d, model_d)
 
 
   def scaled_dot_product_att(self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, attention=True) -> (torch.Tensor, torch.Tensor):  
@@ -37,7 +36,7 @@ class MultiheadAttentionLayer(nn.Module):
 
   def forward(self, x: torch.Tensor, attention=True) -> (torch.Tensor, torch.Tensor):
     shape = x.size()
-    x_shape = x.reshape((shape[0] * shape[2], shape[1], -1))
+    x_shape = x
     batch, length, dim = x_shape.size()
     #print("x shape:", x_shape.shape)
     projection = self.head(x_shape)

@@ -130,6 +130,7 @@ class CouplingLayer(nn.Module):
 
         # update the log absolute det of Jacobian
         det_jacobian = -1 * reverse_mask * scale
+        #print("jacobian:", det_jacobian.shape)
         return y, det_jacobian
 
     # Sampling: base dist. --> real-world dist.

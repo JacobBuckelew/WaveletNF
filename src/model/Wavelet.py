@@ -31,16 +31,17 @@ class DiscreteWaveletTransform(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # pad input before transform
         device = x.device
-        #if x.shape[-2] < self.input_length:
-            #x = self.zero_padding(x)
+        #print(x.shape)
+        if x.shape[-2] < self.input_length:
+            x = self.zero_padding(x)
         x = x.cpu()
         x = x.squeeze()
         #x = x.to(device)
         # calculate Discrete Wavelet Transform
         #self.forward_kernel = self.forward_kernel.to(device)
-        print(x.shape)
         y = ptwt.wavedec(x, wavelet=pywt.Wavelet(self.wavelet), level=1)
-        print(y[1][0, 5, :])
+        A = y[0].to(device)
+        D = y[1].to(device)
         #A, D = self.forward_kernel(x)
         #D = D[0][:, :, 1, :, :]
         #print(D[0, 0, :, :])

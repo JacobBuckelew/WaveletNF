@@ -32,13 +32,7 @@ class Encoder(nn.Module):
     def compute_attention(self, x: torch.Tensor) -> torch.Tensor:
         # compute self attention
         y, A = self.attention(x)
-        #print(x.shape)
-        #y = x + y
-        #y = self.layer_norm1(y)
-        # project back to model dim (length of time in inverted transformer)
-        #y = y.unsqueeze(-1)
-        #y = self.projection(y)
-        #print("y:", y.shape)
+        self.A = A
         return y
     
     # for forecasting

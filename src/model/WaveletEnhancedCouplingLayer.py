@@ -30,6 +30,8 @@ class WaveletEnhancedCouplingLayer(nn.Module):
                 num_entities, 
                 st_units,
                 mask, 
+                wavelet_ =True,
+                attention = True,
                 b_norm= True, 
                 momentum=0.95):
         
@@ -39,14 +41,24 @@ class WaveletEnhancedCouplingLayer(nn.Module):
         self.wavelet = wavelet
         self.num_entities = num_entities
         self.N = N
+        self.wavelet_ = wavelet_
+        self.attention_ = attention
         self.num_features = num_features
         # define the primary modules of a wavelet enhanced coupling flow
-        self.dwt = DiscreteWaveletTransform(wavelet=wavelet, input_length=N)
-        self.encoder = Encoder(model_d=int(N/2), num_features = num_features,hidden_d=hidden_d, n_heads=n_heads)
-        self.coupling_layer = CouplingLayer(num_features, mask, st_units, cond_size=hidden_d)
+        if wavelet_:
+            self.dwt = DiscreteWaveletTransform(wavelet=wavelet, input_length=N)
+            self.output_shape = int(N/2)
+        else:
+            self.output_shape = N
+        if self.attention_:
+            
+            self.encoder = Encoder(model_d=self.output_shape, num_features = num_entities,hidden_d=hidden_d, n_heads=n_heads)
+            self.coupling_layer = CouplingLayer(num_entities, mask, st_units, cond_size=num_entities)
+        else:
+            self.coupling_layer = CouplingLayer(num_entities, mask, st_units, cond_size=None)
         
         if b_norm:
-            self.batch_norm = BatchNormLayer(num_features, momentum)
+            self.batch_norm = BatchNormLayer(num_entities, momentum)
         else:
             self.batch_norm = None
 
@@ -54,35 +66,43 @@ class WaveletEnhancedCouplingLayer(nn.Module):
     def forward(self, x):
 
         if len(x.shape) == 2:
-            x = x.reshape(-1, self.num_entities, int(self.N/2), self.num_features)
-        #print("shape:", shape)
+            x = x.reshape(-1, self.num_entities, self.output_shape, 1)
+
+    
         # y is a tuple:  (Approximation, Detail)
         # DWT
         total_log_det = 0
-        #print(x.shape)
-        log_det, y = self.dwt(x)
-        total_log_det += log_det
+        if self.wavelet_ == True:
+            log_det, y = self.dwt(x)
+            total_log_det += log_det
 
         # Attention
         # Transpose detail coefficients to get feature tokens
-        D = y[1]
-        #print(D.shape)
-        h = self.encoder.compute_attention(D)
-        self.attention = h
+            D = y[1]
+            y = y[0].reshape(-1, self.num_entities)
+            #print(D.shape)
+        else:
+            y = x.reshape(-1, self.num_entities)
+            D = x.squeeze()
+            #print(D.shape)
+        
 
+        if self.attention_ == True:
+            #print(D.shape)
+            h = self.encoder.compute_attention(D)
+            self.attention = h
         # perform RealNVP on Approximation coefficients, conditioning on Detail Coefficient self-attention
-        h = h.reshape(-1, self.hidden_d)
-        y = y[0].reshape(-1, self.num_features)
-        #print(y.shape)
-        #print(h.shape)
+            h = h.reshape(-1, self.num_entities)
+        else:
+            h = None
+        
         output, log_det = self.coupling_layer(y, condition=h)
         total_log_det += log_det
-        #print(total_log_det.shape)
         if self.batch_norm:
             output, log_det = self.batch_norm(output)
             total_log_det += log_det
 
-        return total_log_det, output
+        return total_log_det, output, self.encoder.A
 
     # inverse pass for sampling, forecasting, etc.
     def inverse(self, x):

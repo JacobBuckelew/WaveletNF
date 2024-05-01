@@ -72,6 +72,8 @@ if __name__ == "__main__":
                                st_units = args.st_units, 
                                st_layers = args.st_layers,
                                num_entities=n_sensors,
+                               wavelet=args.wavelet,
+                               attention=args.attention,
                                b_norm= True, 
                                momentum=0.95)
     wavenf = wavenf.to(device)
@@ -93,15 +95,14 @@ if __name__ == "__main__":
         lr=args.lr, weight_decay=0.0
     )
 
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.50)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.75)
     # Training Loop, only use train and validation loaders here
     best_val_loss = 100000
     best_epoch = 0
     start_time = time.time()
-    wavenf.train()
     for epoch in range(args.epochs):
         loss_train = []
-        #wavenf.train()
+        wavenf.train()
         for x, _, in train_loader:
             x = x.to(device)
             # zero gradients

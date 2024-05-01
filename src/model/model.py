@@ -41,29 +41,31 @@ class WaveletEnhancedNF(nn.Module):
         self.momentum = momentum
         self.st_units = [st_units] * st_layers
         # initialize base distribution
-        self.register_buffer('base_mean', torch.zeros(num_features))
-        self.register_buffer('base_var', torch.ones(num_features))
+        self.register_buffer('base_mean', torch.zeros(num_entities))
+        self.register_buffer('base_var', torch.ones(num_entities))
 
         # initialize mask
-        self.mask = mask = torch.arange(num_features).float() % 2
+        self.mask = mask = torch.arange(num_entities).float() % 2
         #print(self.mask.shape)
         #build model
-        self.flow = []
+        self.flows = []
         n = self.N
         for i in range(num_blocks):
-            self.flow += [WaveletEnhancedCouplingLayer(hidden_d, 
+            self.flows += [WaveletEnhancedCouplingLayer(hidden_d, 
                                                   wavelet_type, 
                                                   n, 
                                                   n_heads, 
                                                   num_features, 
                                                   num_entities,
                                                   self.st_units, 
-                                                  self.mask, 
+                                                  self.mask,
+                                                  wavelet,
+                                                  attention,
                                                   b_norm, 
                                                   momentum)]
             self.mask = 1 - self.mask
 
-        self.flow = nn.Sequential(*self.flow)
+        self.flow = nn.Sequential(*self.flows)
 
 
     # define prior distribution (standard Gaussian)
@@ -75,9 +77,12 @@ class WaveletEnhancedNF(nn.Module):
     def forward(self, x, take_mean=True):
         size = x.size()
         sum_logdet_J = 0
+        attention_scores = []
         for layer in self.flow:
-            logdet, x = layer(x)
+            logdet, x, A = layer(x)
+            attention_scores.append(A)
             sum_logdet_J += logdet
+        self.attention_scores = attention_scores
         density = self.log_density(x, sum_logdet_J)
         density = density.reshape(size[0], -1)
         density = torch.mean(density, dim=1)
@@ -90,7 +95,9 @@ class WaveletEnhancedNF(nn.Module):
     def inverse(self, z, y=None):
         pass
 
-    
+    def get_attention(self):
+        return self.attention_scores
+
     # loss function
     def log_density(self, z: torch.Tensor, sum_logdet_J: float):
         # Compute Loss function (log likelihood)
