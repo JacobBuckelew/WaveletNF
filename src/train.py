@@ -8,6 +8,15 @@ from model.model import *
 import time
 from sklearn.metrics import roc_auc_score
 from utils import save_json
+
+def l1_loss(model, lam):
+    loss = 0
+    for i in range(len(model.flow)):
+        loss += torch.norm(model.flow[i].encoder.attention.head.weight, p=1)
+
+    #print("loss:", loss)
+    return lam * loss
+
 def get_args():
 
     parser = argparse.ArgumentParser(description="Anomaly Detection")
@@ -99,6 +108,7 @@ if __name__ == "__main__":
     # Training Loop, only use train and validation loaders here
     best_val_loss = 100000
     best_epoch = 0
+    
     start_time = time.time()
     for epoch in range(args.epochs):
         loss_train = []
@@ -109,6 +119,7 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             # pass data through the model
             loss = -1* wavenf(x)
+            loss += l1_loss(wavenf, lam=0.9)
             # backward step
             total_loss = loss
             loss.backward()
@@ -135,6 +146,10 @@ if __name__ == "__main__":
             for x, labels,  in test_loader:
                 x = x.to(device)
                 loss = -1 * wavenf(x, take_mean=False).cpu().numpy()
+                #print(loss.shape)
+                l1 = l1_loss(wavenf, lam=0.90).cpu().numpy()
+                #print(l1.shape)
+                loss = loss + l1
                 loss_test.append(loss)
                 test_labels.append(labels)
             
@@ -142,7 +157,7 @@ if __name__ == "__main__":
         test_labels = np.concatenate(test_labels)
         test_auc = roc_auc_score(test_labels, loss_test)
         print("=====================================")
-        print(f"Epoch {epoch}: train loss = {np.mean(loss_train)}, val loss = {np.mean(loss_val)}, test auc = {test_auc}")
+        print(f"Epoch {epoch}: train loss = {np.mean(loss_train)}, val loss = {np.mean(loss_val) + l1_loss(wavenf, lam=0.90)}, test auc = {test_auc}")
         # checkpoint for saving best params
         if np.mean(loss_val) < best_val_loss:
             best_val_loss = np.mean(loss_val)

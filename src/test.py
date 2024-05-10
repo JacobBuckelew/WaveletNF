@@ -148,7 +148,7 @@ if __name__ == "__main__":
     loss_test = np.concatenate(loss_test)
     test_labels = np.concatenate(test_labels)
     test_auc = roc_auc_score(test_labels, loss_test)
-    save_attention(attention)
+    #save_attention(attention)
     num_params = sum(p.numel() for p in wavenf.parameters() if p.requires_grad)
     results = {"AUC": test_auc, "Log-Density": np.mean(loss_test), "Inference Time" : np.mean(inference_times), "Parameters": num_params}
     save_json(results, f'{log_path}/test_results')

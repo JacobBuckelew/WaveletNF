@@ -77,6 +77,7 @@ class CouplingLayer(nn.Module):
         self.register_buffer('mask', mask)
         self.snet = []
         self.tnet = []
+        self.attention = None
 
         # build the snet (scaling function)
         if cond_size:
@@ -103,12 +104,15 @@ class CouplingLayer(nn.Module):
         self.tnet = nn.Sequential(*self.tnet)
 
     def conditioner(self, x, condition):
+        #if self.attention is not None:
+            #x = self.attention * x
         if condition is not None:
             x = torch.concat((x, condition), axis= -1)
         #print(x.shape)
         # perform affine coupling on x_[1:d]
         # scale function
         scale_x = x
+        
         for net in self.snet:
             scale_x = net(scale_x)
         scale = scale_x
@@ -123,13 +127,14 @@ class CouplingLayer(nn.Module):
     def forward(self, x, condition):
         x_mask = x * self.mask
         reverse_mask = 1 - self.mask
+        #print("mask:", reverse_mask.shape)
         # use our neural networks for approximating s() and t()
         scale, translate = self.conditioner(x_mask, condition)
         # RealNVP using Masking to partition the data
         y = x_mask + (reverse_mask * ((x - translate) * torch.exp(-1 * scale)))
 
         # update the log absolute det of Jacobian
-        det_jacobian = -1 * reverse_mask * scale
+        det_jacobian = -1 * reverse_mask * scale 
         #print("jacobian:", det_jacobian.shape)
         return y, det_jacobian
 

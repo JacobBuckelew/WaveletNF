@@ -6,7 +6,7 @@ do
         --lr=0.001\
         --num_blocks=2\
         --st_units=32\
-        --epochs=25\
+        --epochs=50\
         --dataset=PSM\
         --wavelet_type=haar\
         --N=64\

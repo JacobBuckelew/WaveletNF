@@ -15,7 +15,7 @@ class Encoder(nn.Module):
         # self.position_embedding
         # attention layer
         self.attention = MultiheadAttentionLayer(model_d, hidden_d, n_heads)
-
+        """
         # Position-wise Feed Forward Neural Net (Deep Set)
         self.ffn = nn.Sequential(
             nn.Linear(hidden_d, 2 * hidden_d),
@@ -24,15 +24,18 @@ class Encoder(nn.Module):
         )
         #self.projection = nn.Linear(num_features, hidden_d)
         # Layer Norm
-        self.layer_norm1 = nn.LayerNorm(hidden_d)
+        self.layer_norm1 = nn.LayerNorm(model_d)
         #self.layer_norm2 = nn.LayerNorm(hidden_d)
-
+        """
 
     # for anomaly detection
     def compute_attention(self, x: torch.Tensor) -> torch.Tensor:
         # compute self attention
         y, A = self.attention(x)
+        #print(y.shape)
+        #y = self.layer_norm1(y)
         self.A = A
+        #print(y)
         return y
     
     # for forecasting

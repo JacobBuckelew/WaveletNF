@@ -93,6 +93,7 @@ class WaveletEnhancedCouplingLayer(nn.Module):
             self.attention = h
         # perform RealNVP on Approximation coefficients, conditioning on Detail Coefficient self-attention
             h = h.reshape(-1, self.num_entities)
+            self.coupling_layer.attention = h
         else:
             h = None
         
@@ -102,6 +103,7 @@ class WaveletEnhancedCouplingLayer(nn.Module):
             output, log_det = self.batch_norm(output)
             total_log_det += log_det
 
+        #print(output.shape)
         return total_log_det, output, self.encoder.A
 
     # inverse pass for sampling, forecasting, etc.

@@ -5,6 +5,8 @@ from datetime import datetime
 from torch.utils.data import DataLoader, Dataset
 from sklearn.preprocessing import MinMaxScaler
 
+
+
 def load_swat(window_size, stride, batch_size, val_split=0.80):
     
     data = pd.read_csv("../data/swat/SWaT_Dataset_Attack_v0.csv")

@@ -18,8 +18,9 @@ class MultiheadAttentionLayer(nn.Module):
     self.hidden_d = hidden_d
     self.n_heads = n_heads
     self.head_d = hidden_d // n_heads
-    self.head = nn.Linear(model_d, 3 * hidden_d)
+    self.head = nn.Linear(model_d, 2 * hidden_d)
     self.W_o = nn.Linear(hidden_d, model_d)
+    self.value = nn.Linear(model_d, hidden_d)
 
 
   def scaled_dot_product_att(self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, attention=True) -> (torch.Tensor, torch.Tensor):  
@@ -27,7 +28,7 @@ class MultiheadAttentionLayer(nn.Module):
     logits = torch.matmul(queries, keys.transpose(-2, -1))
     logits = logits/math.sqrt(d_k)
     attention_matrix = F.softmax(logits, dim=-1)
-
+    values = values.unsqueeze(1)
     output = torch.matmul(attention_matrix, values)
     if attention:
         return output, attention_matrix
@@ -41,9 +42,10 @@ class MultiheadAttentionLayer(nn.Module):
     #print("x shape:", x_shape.shape)
     projection = self.head(x_shape)
 
-    projection = projection.reshape(batch, length, self.n_heads, 3 * self.head_d)
+    projection = projection.reshape(batch, length, self.n_heads, 2 * self.head_d)
     projection = projection.permute(0,2,1,3)
-    queries, keys, values = projection.chunk(3, dim=-1)
+    queries, keys = projection.chunk(2, dim=-1)
+    values = self.value(x_shape)
     # call scaled dot production attention
     values, A = self.scaled_dot_product_att(queries, keys, values, attention)
     values = values.permute(0,2,1,3)
