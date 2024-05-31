@@ -5,6 +5,7 @@ do
                 --window_size=64\
                 --num_blocks=2\
                 --st_units=32\
+                --lam=0.5\
                 --dataset=PSM\
                 --wavelet_type=haar\
                 --N=64\

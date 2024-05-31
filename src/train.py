@@ -12,7 +12,7 @@ from utils import save_json
 def l1_loss(model, lam):
     loss = 0
     for i in range(len(model.flow)):
-        loss += torch.norm(model.flow[i].encoder.attention.head.weight, p=1)
+        loss += torch.norm(model.flow[i].encoder.attention.W_o.weight, p=1)
 
     #print("loss:", loss)
     return lam * loss
@@ -42,6 +42,7 @@ def get_args():
     parser.add_argument("--momentum", type=float, default=0.95)
     # training parameters
     parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--lam", type=float, default=0.5)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--window_size", type=int, default=50)
     parser.add_argument("--stride_size", type=int, default=10)
@@ -67,7 +68,7 @@ if __name__ == "__main__":
 
     # load data
 
-    train_loader, val_loader, test_loader, n_sensors = load_data(dataset=args.dataset, window_size=args.window_size, stride=10, batch_size=args.batch_size)
+    train_loader, val_loader, test_loader, n_sensors = load_data(dataset=args.dataset, window_size=args.window_size, stride=args.stride_size, batch_size=args.batch_size)
 
     # train model
 
@@ -86,6 +87,8 @@ if __name__ == "__main__":
                                b_norm= True, 
                                momentum=0.95)
     wavenf = wavenf.to(device)
+    print("on device")
+    time.sleep(20)
     wavenf.train()
 
     # save checkpt path
@@ -104,11 +107,13 @@ if __name__ == "__main__":
         lr=args.lr, weight_decay=0.0
     )
 
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.75)
+    if args.dataset == "SWAT":
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.75)
+    else:
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.50)
     # Training Loop, only use train and validation loaders here
     best_val_loss = 100000
     best_epoch = 0
-    
     start_time = time.time()
     for epoch in range(args.epochs):
         loss_train = []
@@ -119,7 +124,8 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             # pass data through the model
             loss = -1* wavenf(x)
-            loss += l1_loss(wavenf, lam=0.9)
+            if not(args.attention == 0 or args.lam == 0.0):
+                loss += l1_loss(wavenf, lam=args.lam)
             # backward step
             total_loss = loss
             loss.backward()
@@ -140,6 +146,8 @@ if __name__ == "__main__":
             for x, _,  in val_loader:
                 x = x.to(device)
                 loss =  -1 * wavenf(x).cpu().numpy()
+                if not(args.attention == 0 or args.lam == 0.0):
+                    loss += l1_loss(wavenf, lam=args.lam).cpu().numpy()
                 #print(loss)
                 loss_val.append(loss)
             
@@ -147,9 +155,10 @@ if __name__ == "__main__":
                 x = x.to(device)
                 loss = -1 * wavenf(x, take_mean=False).cpu().numpy()
                 #print(loss.shape)
-                l1 = l1_loss(wavenf, lam=0.90).cpu().numpy()
+                if not(args.attention == 0 or args.lam == 0.0):
+                    loss += l1_loss(wavenf, lam=args.lam).cpu().numpy()
+                
                 #print(l1.shape)
-                loss = loss + l1
                 loss_test.append(loss)
                 test_labels.append(labels)
             
@@ -157,7 +166,7 @@ if __name__ == "__main__":
         test_labels = np.concatenate(test_labels)
         test_auc = roc_auc_score(test_labels, loss_test)
         print("=====================================")
-        print(f"Epoch {epoch}: train loss = {np.mean(loss_train)}, val loss = {np.mean(loss_val) + l1_loss(wavenf, lam=0.90)}, test auc = {test_auc}")
+        print(f"Epoch {epoch}: train loss = {np.mean(loss_train)}, val loss = {np.mean(loss_val)}, test auc = {test_auc}")
         # checkpoint for saving best params
         if np.mean(loss_val) < best_val_loss:
             best_val_loss = np.mean(loss_val)

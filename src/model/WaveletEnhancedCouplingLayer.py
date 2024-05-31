@@ -47,7 +47,7 @@ class WaveletEnhancedCouplingLayer(nn.Module):
         # define the primary modules of a wavelet enhanced coupling flow
         if wavelet_:
             self.dwt = DiscreteWaveletTransform(wavelet=wavelet, input_length=N)
-            self.output_shape = int(N/2)
+            self.output_shape = int(N)
         else:
             self.output_shape = N
         if self.attention_:
@@ -56,7 +56,6 @@ class WaveletEnhancedCouplingLayer(nn.Module):
             self.coupling_layer = CouplingLayer(num_entities, mask, st_units, cond_size=num_entities)
         else:
             self.coupling_layer = CouplingLayer(num_entities, mask, st_units, cond_size=None)
-        
         if b_norm:
             self.batch_norm = BatchNormLayer(num_entities, momentum)
         else:
@@ -104,7 +103,10 @@ class WaveletEnhancedCouplingLayer(nn.Module):
             total_log_det += log_det
 
         #print(output.shape)
-        return total_log_det, output, self.encoder.A
+        if self.attention_ == True:
+            return total_log_det, output, self.encoder.A
+        else:
+            return total_log_det, output
 
     # inverse pass for sampling, forecasting, etc.
     def inverse(self, x):

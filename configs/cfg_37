@@ -1,0 +1,9 @@
+{
+    "lr": 0.001,
+    "epochs": 30,
+    "batch_size": 512,
+    "num_blocks": 1,
+    "st_units": 8,
+    "st_layers": 1,
+    "lam": 0.30000000000000004
+}

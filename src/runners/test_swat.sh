@@ -4,9 +4,10 @@ do
         --batch_size=256\
         --window_size=64\
         --num_blocks=1\
-        --st_units=32\
+        --st_units=64\
         --dataset=SWAT\
-        --wavelet_type=haar\
+        --lam=0.8\
+        --wavelet_type=coif1\
         --N=64\
         --heads=1\
         --seed=${seed}\

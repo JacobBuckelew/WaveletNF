@@ -2,8 +2,8 @@
 import math
 import torch
 import torch.nn as nn
-from pytorch_wavelets import DWTForward, DWTInverse
-import ptwt, pywt
+import pywt, ptwt
+from ptwt._stationary_transform import _iswt, _swt
 
 """
     DiscreteWaveletTransform implements DWT, zero padding, and cropping using the PyWavelets library (https://pywavelets.readthedocs.io/en/latest/)
@@ -20,7 +20,7 @@ class DiscreteWaveletTransform(nn.Module):
 
         self.wavelet = wavelet
         self.input_length = input_length
-        self.output_length = math.ceil(input_length / 2)
+        #self.output_length = math.ceil(input_length / 2)
 
     def zero_padding(self, x: torch.Tensor) -> torch.Tensor:
         # inputs are of shape (Dimension, Seq_Length). Pad zeros to the last dimension
@@ -36,12 +36,16 @@ class DiscreteWaveletTransform(nn.Module):
             x = self.zero_padding(x)
         x = x.cpu()
         x = x.squeeze()
+        #print(x.shape)
         #x = x.to(device)
         # calculate Discrete Wavelet Transform
         #self.forward_kernel = self.forward_kernel.to(device)
-        y = ptwt.wavedec(x, wavelet=pywt.Wavelet(self.wavelet), level=1)
+        y = _swt(x, wavelet=pywt.Wavelet(self.wavelet), level=1)
+    
         A = y[0].to(device)
+        #print(A.shape)
         D = y[1].to(device)
+        #print(D.shape)
         #A, D = self.forward_kernel(x)
         #D = D[0][:, :, 1, :, :]
         #print(D[0, 0, :, :])

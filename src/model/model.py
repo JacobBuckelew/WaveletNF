@@ -36,6 +36,7 @@ class WaveletEnhancedNF(nn.Module):
         self.hidden_d = hidden_d
         self.wavelet_type = wavelet_type
         self.N = N
+        self.attention = attention
         self.num_features = num_features
         self.b_norm = b_norm
         self.momentum = momentum
@@ -75,14 +76,21 @@ class WaveletEnhancedNF(nn.Module):
     
     # density estimation
     def forward(self, x, take_mean=True):
+        if len(x.shape) ==2:
+            x = x.unsqueeze(0)
         size = x.size()
         sum_logdet_J = 0
-        attention_scores = []
+        if self.attention:
+            attention_scores = []
         for layer in self.flow:
-            logdet, x, A = layer(x)
-            attention_scores.append(A)
+            if self.attention:
+                logdet, x, A = layer(x)
+                attention_scores.append(A)
+            else:
+                logdet, x = layer(x)
             sum_logdet_J += logdet
-        self.attention_scores = attention_scores
+        if self.attention:
+            self.attention_scores = attention_scores
         density = self.log_density(x, sum_logdet_J)
         density = density.reshape(size[0], -1)
         density = torch.mean(density, dim=1)
@@ -90,6 +98,26 @@ class WaveletEnhancedNF(nn.Module):
             return torch.mean(density)
         else:
             return density
+
+    def density_t(self, x, take_mean=True):
+        size = x.size()
+        sum_logdet_J = 0
+        if self.attention:
+            attention_scores = []
+        for layer in self.flow:
+            logdet, x, A = layer(x)
+            if self.attention:
+                attention_scores.append(A)
+            sum_logdet_J += logdet
+        if self.attention:
+            self.attention_scores = attention_scores
+        density = self.log_density(x, sum_logdet_J)
+        density = density.reshape(size[0], size[2])
+        if take_mean:
+            return torch.mean(density)
+        else:
+            return density
+
 
     # sampling
     def inverse(self, z, y=None):

@@ -27,6 +27,8 @@ class MultiheadAttentionLayer(nn.Module):
     d_k = queries.size()[-1]
     logits = torch.matmul(queries, keys.transpose(-2, -1))
     logits = logits/math.sqrt(d_k)
+
+    #attention_matrix = logits
     attention_matrix = F.softmax(logits, dim=-1)
     values = values.unsqueeze(1)
     output = torch.matmul(attention_matrix, values)
@@ -36,8 +38,11 @@ class MultiheadAttentionLayer(nn.Module):
         return output, None
 
   def forward(self, x: torch.Tensor, attention=True) -> (torch.Tensor, torch.Tensor):
+    if len(x.shape) == 2:
+      x = x.unsqueeze(0)
     shape = x.size()
     x_shape = x
+    #print(x_shape.shape)
     batch, length, dim = x_shape.size()
     #print("x shape:", x_shape.shape)
     projection = self.head(x_shape)
