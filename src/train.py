@@ -87,8 +87,6 @@ if __name__ == "__main__":
                                b_norm= True, 
                                momentum=0.95)
     wavenf = wavenf.to(device)
-    print("on device")
-    time.sleep(20)
     wavenf.train()
 
     # save checkpt path
