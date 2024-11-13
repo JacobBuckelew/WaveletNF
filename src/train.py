@@ -107,6 +107,8 @@ if __name__ == "__main__":
 
     if args.dataset == "SWAT":
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.75)
+    elif args.dataset == "PMU":
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.50)
     else:
         scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.50)
     # Training Loop, only use train and validation loaders here
@@ -133,7 +135,7 @@ if __name__ == "__main__":
 
         scheduler.step()
         
-        # validate on calibration data
+        # validate 
         #wavenf.eval()
         loss_val = []
         labels = []
@@ -148,17 +150,33 @@ if __name__ == "__main__":
                     loss += l1_loss(wavenf, lam=args.lam).cpu().numpy()
                 #print(loss)
                 loss_val.append(loss)
+
             
-            for x, labels,  in test_loader:
-                x = x.to(device)
-                loss = -1 * wavenf(x, take_mean=False).cpu().numpy()
-                #print(loss.shape)
-                if not(args.attention == 0 or args.lam == 0.0):
-                    loss += l1_loss(wavenf, lam=args.lam).cpu().numpy()
+            if args.dataset == "PMU":
+                for loader in test_loader:
+                    for x, labels,  in loader:
+                        x = x.to(device)
+                        loss = -1 * wavenf(x, take_mean=False).cpu().numpy()
+                        #print(loss.shape)
+                        if not(args.attention == 0 or args.lam == 0.0):
+                            loss += l1_loss(wavenf, lam=args.lam).cpu().numpy()
                 
-                #print(l1.shape)
-                loss_test.append(loss)
-                test_labels.append(labels)
+                        #print(l1.shape)
+                        loss_test.append(loss)
+                        test_labels.append(labels)
+
+            else:
+            
+                for x, labels,  in test_loader:
+                    x = x.to(device)
+                    loss = -1 * wavenf(x, take_mean=False).cpu().numpy()
+                    #print(loss.shape)
+                    if not(args.attention == 0 or args.lam == 0.0):
+                        loss += l1_loss(wavenf, lam=args.lam).cpu().numpy()
+                
+                    #print(l1.shape)
+                    loss_test.append(loss)
+                    test_labels.append(labels)
             
         loss_test = np.concatenate(loss_test)
         test_labels = np.concatenate(test_labels)

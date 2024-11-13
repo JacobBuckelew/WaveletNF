@@ -6,37 +6,51 @@ from torch.utils.data import DataLoader, Dataset
 from sklearn.preprocessing import MinMaxScaler
 import os
 
-'''
+
 def load_rtds(window_size, stride_size, batch_size):
     train_split = 0.80
 
-    train_df = pd.read_csv("../data/rtds/train/data.csv")
+    train_df = pd.read_csv("../data/pmu/training/data.csv")
     train_df = train_df.set_index("Timestamp")
     train_df = train_df.drop(train_df.columns[[0]], axis=1)
-
+    print("data length:", len(train_df))
     scaler = MinMaxScaler()
     idx = train_df.index
     norm_train = pd.DataFrame(scaler.fit_transform(train_df))
     norm_train.index = idx
-
+    print(norm_train.shape)
     train_df = norm_train.iloc[:int(train_split * len(train_df))]
+    n_sensor = norm_train.shape[1]
     val_df = norm_train.iloc[int(train_split * len(train_df)):]
 
+    train_loader = DataLoader(PMU(df=train_df, labels=None, window_size=window_size, stride_size=10), batch_size=batch_size, shuffle=False)
+    val_loader = DataLoader(PMU(df=val_df, labels=None, window_size=window_size, stride_size=10), batch_size=batch_size, shuffle=False)
     test_loaders = []
-
+    runs = 5
+    total_labels = []
+    total = 0
     for i in range(runs):
         
-        df = pd.read_csv(f"{test_path}/run{i+1}/data.csv")
+        df = pd.read_csv(f"../data/pmu/test/run{i+1}/data.csv")
         df = df.set_index("Timestamp")
         T = len(df)
+        total += T
         idx = df.index
         norm_df = pd.DataFrame(scaler.transform(df))
         norm_df.index = idx
         # load labels
-        labels = pd.read_csv(f"{test_path}/run{i+1}/labels.csv")
+        labels = pd.read_csv(f"../data/pmu/test/run{i+1}/labels.csv")
         labels = labels.drop(labels.columns[[0]], axis=1)
+        label = [0 if sum(labels.iloc[index]) == 0 else 1 for index in range(len(labels))]
+        total_labels.append(label)
+        loader = DataLoader(PMU(df=norm_df, labels=labels, window_size=window_size, stride_size=10), batch_size=batch_size, shuffle=False)
+        test_loaders.append(loader)
+    #print("len test set:", T)
+    total_label = np.concatenate(total_labels)
+    #print("anomaly ratio in test set:", np.sum(total_label)/len(total_label))
+    return train_loader, val_loader, test_loaders, n_sensor
+    
 
-'''
 
 def load_wadi(window_size, stride_size, batch_size):
     data = pd.read_csv("../data/wadi/WADI_attackdata.csv")
@@ -163,6 +177,8 @@ def load_psm(window_size, stride_size, batch_size,label=False):
     test_df = norm_feature.iloc[int(0.8*len(data)):]
     test_label = labels[int(0.8*len(data)):]
 
+    
+
 
     print("Train data:", len(train_df))
     print("Test data:", len(test_df))
@@ -213,7 +229,7 @@ def load_swat(window_size, stride, batch_size, val_split=0.80):
     return train_loader, val_loader, test_loader, n_sensor
 
 
-prefix = "../data/smd/"
+
 import pickle
 def load_smd(dataset, window_size = 60, stride_size = 10, batch_size= 256, train_split = 0.6, do_preprocess=True, train_start=0,
              test_start=0):
@@ -222,7 +238,7 @@ def load_smd(dataset, window_size = 60, stride_size = 10, batch_size= 256, train
 
     return shape: (([train_size, x_dim], [train_size] or None), ([test_size, x_dim], [test_size]))
     """
-   
+    prefix = "../data/smd/"
     x_dim = 38
  
     try:
@@ -232,6 +248,7 @@ def load_smd(dataset, window_size = 60, stride_size = 10, batch_size= 256, train
     except (KeyError, FileNotFoundError):
         print("Data not found")
         test_data = None
+    prefix = "../data/smd/labels"
     try:
         f = open(os.path.join(prefix, dataset + "_test_label.pkl"), "rb")
         test_label = pickle.load(f).reshape((-1))[test_start:]
@@ -300,7 +317,7 @@ def load_data(dataset, window_size, stride, batch_size):
         train_loader, val_loader, test_loader, n_sensor = load_smd(dataset, window_size, stride, batch_size)
     elif dataset == "WADI":
         train_loader, val_loader, test_loader, n_sensor = load_wadi(window_size, stride, batch_size)
-    elif dataset == "RTDS":
+    elif dataset == "PMU":
         train_loader, val_loader, test_loader, n_sensor = load_rtds(window_size, stride, batch_size)
     else:
         raise Exception(f"{dataset} is not a valid dataset option.")
@@ -449,3 +466,39 @@ class WADI(Dataset):
         end = start + self.window_size
         data = self.data[start:end].reshape([self.window_size, -1, 1])
         return torch.FloatTensor(data).transpose(0,1), self.label[index]
+
+class PMU(Dataset):
+
+    def __init__(self, df, labels, window_size, stride_size):
+        super(PMU, self).__init__()
+        self.df = df
+        self.window_size = window_size
+        self.stride_size = stride_size
+        self.labels = labels
+        self.data, self.idx, self.label = self.preprocess(df, labels)
+        self.columns = np.append(df.columns, ["Label"])
+
+        self.timeindex = df.index[self.idx]
+
+    def preprocess(self, data, labels):
+
+        start_idx = np.arange(0, len(data) - self.window_size + 1, self.stride_size)
+
+        if labels is not None:
+            labels = labels.drop(labels.columns[[0]], axis=1)
+            label = [1 if  (labels[index:index+self.window_size].sum() > 0).any() else 0 for index in start_idx]
+            #print(label)
+        else:
+            label = [0 for index in start_idx]
+        return data.values, start_idx, np.array(label)
+
+    def __len__(self):
+        return len(self.idx)
+
+    
+    def __getitem__(self, index):
+        start = self.idx[index]
+        end = start + self.window_size
+        data = self.data[start:end].reshape([self.window_size, -1, 1])
+        return torch.FloatTensor(data).transpose(0,1), self.label[index]
+

@@ -188,57 +188,47 @@ if __name__ == "__main__":
     inference_times = []
     i = 0
 
-    # threshold selection using validation set
-    """
-    loss_val = []
-    labels_val = []
-    with torch.no_grad():
-        wavenf.eval()
-        for x, labels in val_loader:
-
-            x = x.to(device)
-            loss = -1 * wavenf(x, take_mean=False).cpu().numpy()
-            loss += l1_loss(wavenf, args.lam).cpu().numpy()
-            loss_val.append(loss)
-            labels_val.append(labels)
-
-        
-
-        loss_val = np.concatenate(loss_val)
-        labels_val = np.concatenate(labels_val)
-
-        # get threshold based on validation set
-        threshold = search_opt_threshold(loss_val, labels_val)
-    """
-    
-
-
 
 
     #print(test_loader.dataset.labels)
     with torch.no_grad():
         wavenf.eval()
-        for x, labels  in test_loader:
-            x = x.to(device)
-            if args.example == 1 and args.dataset == "machine-1-2" and args.seed == 6:
-                loss = -1 * wavenf.density_t(x, take_mean=False).cpu().numpy()
-                loss = loss.reshape(-1)
-            else:
-                start = timeit.default_timer()
-                loss = -1 * wavenf(x, take_mean=False).cpu().numpy()
-                if not(args.attention == 0 or args.lam == 0):
-                    loss += l1_loss(wavenf, args.lam).cpu().numpy()
-                end = timeit.default_timer()
-                inference_times.append(end - start)
-                loss_test.append(loss)
-            test_labels.append(labels)
-            idx = test_loader.dataset.idx[i]
+        if args.dataset != "PMU":
+            for x, labels  in test_loader:
+                x = x.to(device)
+                if args.example == 1 and args.dataset == "machine-1-2" and args.seed == 6:
+                    loss = -1 * wavenf.density_t(x, take_mean=False).cpu().numpy()
+                    loss = loss.reshape(-1)
+                else:
+                    start = timeit.default_timer()
+                    loss = -1 * wavenf(x, take_mean=False).cpu().numpy()
+                    if not(args.attention == 0 or args.lam == 0):
+                        loss += l1_loss(wavenf, args.lam).cpu().numpy()
+                    end = timeit.default_timer()
+                    inference_times.append(end - start)
+                    loss_test.append(loss)
+                test_labels.append(labels)
+                idx = test_loader.dataset.idx[i]
 
-            # SMD running example
-            if args.example == 1 and i ==20  and args.dataset == "machine-1-2" and args.seed == 6:
-                attention.append(wavenf.flow[1].attention)
-                scores.append(wavenf.get_attention())
-            i = i+1
+                # SMD running example
+                if args.example == 1 and i ==20  and args.dataset == "machine-1-2" and args.seed == 6:
+                    attention.append(wavenf.flow[1].attention)
+                    scores.append(wavenf.get_attention())
+                i = i+1
+        else:
+            for loader in test_loader:
+                for x, labels,  in loader:
+                        x = x.to(device)
+                        start = timeit.default_timer()
+                        loss = -1 * wavenf(x, take_mean=False).cpu().numpy()
+                        #print(loss.shape)
+                        if not(args.attention == 0 or args.lam == 0.0):
+                            loss += l1_loss(wavenf, lam=args.lam).cpu().numpy()
+                        end = timeit.default_timer()
+                        inference_times.append(end - start)
+                        #print(l1.shape)
+                        loss_test.append(loss)
+                        test_labels.append(labels)
 
     # SMD running example, this is hard-coded for easy reproducibility
     if args.example == 1:
