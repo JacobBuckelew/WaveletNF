@@ -1,0 +1,15 @@
+CUDA_VISIBLE_DEVICES=0 python3 ../test.py\
+        --batch_size=256\
+        --window_size=16\
+        --stride_size=16\
+        --num_blocks=1\
+        --k=0.10\
+        --st_units=32\
+        --gpu\
+        --dataset=PMU\
+        --example=1\
+        --wavelet_type=db2\
+        --N=16\
+        --heads=1\
+        --seed=6\
+        --name=WaveletNF_PMU_seed_6

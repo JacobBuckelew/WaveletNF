@@ -1,16 +1,17 @@
 for seed in {6..10}
 do
-    CUDA_VISIBLE_DEVICES=2 python3 ../train.py\
-        --batch_size=256\
-        --window_size=64\
+    CUDA_VISIBLE_DEVICES=0 python3 ../train.py\
+        --batch_size=512\
+        --window_size=32\
         --lr=0.001\
-        --num_blocks=2\
-        --lam=0.99\
-        --st_units=64\
-        --epochs=20\
+        --gpu\
+        --k=0.10\
+        --num_blocks=1\
+        --st_units=16\
+        --epochs=10\
         --dataset=WADI\
-        --wavelet_type=haar\
-        --N=64\
+        --wavelet_type=coif2\
+        --N=32\
         --heads=1\
         --seed=${seed}\
         --name=WaveletNF_wadi_seed_${seed}

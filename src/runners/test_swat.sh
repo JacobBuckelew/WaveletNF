@@ -3,10 +3,11 @@ do
     CUDA_VISIBLE_DEVICES=0 python3 ../test.py\
         --batch_size=256\
         --window_size=64\
+        --k=0.05\
+        --gpu\
         --num_blocks=1\
-        --st_units=64\
+        --st_units=16\
         --dataset=SWAT\
-        --lam=0.8\
         --wavelet_type=coif1\
         --N=64\
         --heads=1\

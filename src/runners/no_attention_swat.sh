@@ -1,17 +1,20 @@
 for seed in {6..10}
 do
     CUDA_VISIBLE_DEVICES=1 python3 ../train.py\
-        --batch_size=256\
+        --batch_size=512\
         --window_size=64\
-        --lr=0.0015\
+        --k=0.05\
+        --gpu\
+        --lr=0.001\
+        --epochs=1\
         --num_blocks=1\
-        --st_units=64\
-        --lam=0.8\
-        --epochs=15\
+        --st_units=16\
         --dataset=SWAT\
-        --wavelet_type=haar\
-        --N=64\
+        --wavelet=1\
         --attention=0\
+        --wavelet_type=coif1\
+        --N=64\
+        --heads=1\
         --seed=${seed}\
         --name=WENFA_swat_seed_${seed}
 done
@@ -19,15 +22,18 @@ done
 for seed in {6..10}
 do
     CUDA_VISIBLE_DEVICES=1 python3 ../test.py\
-        --batch_size=256\
+        --batch_size=512\
         --window_size=64\
+        --k=0.05\
+        --gpu\
         --num_blocks=1\
-        --st_units=64\
+        --st_units=16\
         --dataset=SWAT\
-        --lam=0.8\
-        --wavelet_type=haar\
-        --N=64\
+        --wavelet=1\
         --attention=0\
+        --wavelet_type=coif1\
+        --N=64\
+        --heads=1\
         --seed=${seed}\
         --name=WENFA_swat_seed_${seed}
 done

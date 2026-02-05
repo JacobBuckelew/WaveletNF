@@ -1,0 +1,13 @@
+CUDA_VISIBLE_DEVICES=0 python3 ../test_scaling.py\
+    --batch_size=64\
+    --window_size=64\
+    --num_blocks=1\
+    --k=0.25\
+    --st_units=32\
+    --gpu\
+    --dataset=PMU\
+    --wavelet_type=db2\
+    --N=64\
+    --heads=1\
+    --seed=6\
+    --name=WaveletNF_PMU_seed_6
