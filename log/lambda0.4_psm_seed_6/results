@@ -1,7 +1,0 @@
-{
-    "final train_loss": -63.30553309122721,
-    "final val_loss": -44.4166807276862,
-    "best val_loss:": -44.637656714235035,
-    "best epoch": 18,
-    "train_time": 22.568245887756348
-}

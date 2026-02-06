@@ -1,4 +1,4 @@
-wavelets="haar db1 coif2 coif1"
+wavelets="haar db1 db2 coif2 coif1"
 for seed in {6..8}; do
     for wavelet in $wavelets; do
         CUDA_VISIBLE_DEVICES=0 python3 ../test.py\
