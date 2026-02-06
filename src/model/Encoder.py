@@ -83,7 +83,6 @@ class Encoder(nn.Module):
     # for anomaly detection
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         full_shape = x.shape
-        print("input shape to encoder:", x.shape)
         # compute wavelet transforms for each basis
         #D_list = []
         #A_list = []

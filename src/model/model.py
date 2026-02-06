@@ -173,9 +173,7 @@ class WaveletEnhancedNF(nn.Module):
     def log_density(self, z: torch.Tensor, sum_logdet_J: float):
         # Compute Loss function (log likelihood)
         #print(sum_logdet_J)
-        print("z shape in log_density:", z.shape)
         log_likelihood = torch.sum(self.prior.log_prob(z) + sum_logdet_J, dim=1)
-        print("Log likelihood shape:", log_likelihood.shape)
         return log_likelihood
     
     def get_top_k_features(self):

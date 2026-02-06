@@ -19,7 +19,6 @@ class DiscreteWaveletTransform(nn.Module):
 
         self.wavelet = wavelet
         self.input_length = input_length
-        print("DWT initialized with input length:", self.input_length)
         #self.output_length = math.ceil(input_length / 2)
 
     def zero_padding(self, x: torch.Tensor) -> torch.Tensor:
