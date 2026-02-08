@@ -1,6 +1,6 @@
 for seed in {6..10}
 do
-    CUDA_VISIBLE_DEVICES=0 python3 ../train.py\
+    CUDA_VISIBLE_DEVICES=0 python3 src/train.py\
         --batch_size=512\
         --window_size=16\
         --lr=0.006\

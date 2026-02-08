@@ -5,10 +5,10 @@ import numpy as np
 
 # Define your file paths and model names
 files = {
-    'WENFlow-1': '../figures/WENFLOW_memory_values_0.01.csv',
-    'WENFlow-5': '../figures/WENFLOW_memory_values_0.05.csv',
-    'WENFlow-10': '../figures/WENFLOW_memory_values_0.1.csv',
-    'WENFlow-25': '../figures/WENFLOW_memory_values_0.25.csv'
+    'WENFlow-1': 'figures/WENFLOW_memory_values_0.01.csv',
+    'WENFlow-5': 'figures/WENFLOW_memory_values_0.05.csv',
+    'WENFlow-10': 'figures/WENFLOW_memory_values_0.1.csv',
+    'WENFlow-25': 'figures/WENFLOW_memory_values_0.25.csv'
 }
 
 # Create the plot
@@ -57,5 +57,5 @@ plt.title('Memory Scaling Across Models', fontsize=14)
 plt.legend(fontsize=10, loc='best')
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('../figures/memory_scaling.png', dpi=300, bbox_inches='tight')
+plt.savefig('figures/memory_scaling.png', dpi=300, bbox_inches='tight')
 plt.show()

@@ -1,6 +1,6 @@
 for seed in {6..10}
 do
-    CUDA_VISIBLE_DEVICES=1 python3 ../test.py\
+    CUDA_VISIBLE_DEVICES=1 python3 src/test.py\
         --batch_size=256\
         --window_size=16\
         --num_blocks=1\

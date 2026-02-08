@@ -1,5 +1,4 @@
 import os
-os.chdir("../")
 import torch
 import torch.optim as optim
 import argparse
@@ -51,11 +50,11 @@ def get_process_gpu_memory():
 def get_args():
 
     parser = argparse.ArgumentParser(description="Anomaly Detection")
-    parser.add_argument("--checkpt", type=str, default='../checkpoint', help="checkpoint")
+    parser.add_argument("--checkpt", type=str, default='checkpoint', help="checkpoint")
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--k", type=float, default=0.05)
     parser.add_argument("--log", type=int, default=20, help="How often to log model")
-    parser.add_argument("--log_output", type=str, default="../log")
+    parser.add_argument("--log_output", type=str, default="log")
     parser.add_argument("--name", type=str, default="WaveletNF")
     parser.add_argument("--gpu", action="store_true")
     parser.add_argument("--dataset", type=str, default="PSM")
@@ -116,7 +115,7 @@ def plot_histogram(log_likelihoods, labels, dataset):
         'class2': class2_hist
     })
 
-    df.to_csv('../figures/pmu_histogram_data.csv', index=False)
+    df.to_csv('figures/pmu_histogram_data.csv', index=False)
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -136,7 +135,7 @@ def plot_histogram(log_likelihoods, labels, dataset):
     ax.grid(True, alpha=0.3, axis='y')
 
     plt.tight_layout()
-    plt.savefig('../figures/pmu_histogram.png', dpi=300, bbox_inches='tight')
+    plt.savefig('figures/pmu_histogram.png', dpi=300, bbox_inches='tight')
     plt.show()
     
 
@@ -311,7 +310,7 @@ if __name__ == "__main__":
         wadi_results = {}
         wadi_results["likelihoods"] = np.concatenate(loss_test)
         wadi_results["labels"] = labels
-        save_json(wadi_results, f'../figures/wadi_likelihoods')
+        save_json(wadi_results, f'figures/wadi_likelihoods')
 
 
     else:

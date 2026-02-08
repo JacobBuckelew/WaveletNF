@@ -63,7 +63,6 @@ class WaveletEnhancedNF(nn.Module):
                                 k = k, use_wavelet=wavelet, use_attention=attention)
         else:
             hidden_d = None
-            print("running realnvp")
 
         #self.feature_extractor = nn.Linear(num_features, hidden_d)
         #print("stu units:", st_units)

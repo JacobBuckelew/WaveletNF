@@ -1,7 +1,7 @@
-wavelets="haar db1 db2 coif1 coif2"
+wavelets="coif2 haar db1 db2 coif1"
 for seed in {6..8}; do
     for wavelet in $wavelets; do
-        CUDA_VISIBLE_DEVICES=0 python3 ../test.py\
+        CUDA_VISIBLE_DEVICES=0 python3 src/test.py\
         --batch_size=512\
         --window_size=64\
         --k=0.05\

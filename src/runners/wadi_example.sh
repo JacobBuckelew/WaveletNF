@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=0 python3 ../test.py\
+CUDA_VISIBLE_DEVICES=0 python3 src/test.py\
     --batch_size=256\
     --window_size=32\
     --stride_size=32\

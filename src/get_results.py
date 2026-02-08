@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
+import os
 results = dotdict({})
 for model in ["WaveletNF", "WENFW", "WENFA", "RealNVP", "coif1", "coif2", "db1", "db2", "haar", "k0.05", "k0.10", "k0.15", "k0.20", "k0.25", "window16", "window32", "window48","window64", "window96"]:
 
@@ -28,7 +28,7 @@ for model in ["WaveletNF", "WENFW", "WENFA", "RealNVP", "coif1", "coif2", "db1",
         else:
             seeds = [6, 7, 8, 9, 10]
         for seed in seeds:
-            log = load_json(f"../log/{model}_{dataset}_seed_{seed}/test_results")
+            log = load_json(f"log/{model}_{dataset}_seed_{seed}/test_results")
             log = dotdict(log)
             auc_values.append(log["AUC"])
             if log["AUC"] > auc:
@@ -45,8 +45,8 @@ for model in ["WaveletNF", "WENFW", "WENFA", "RealNVP", "coif1", "coif2", "db1",
                     plt.title("ROC Curve for WaveletNF on SWaT Dataset")
                     plt.xlabel("False Positive Rate")
                     plt.ylabel("True Positive Rate")
-                    plt.savefig("../figures/ROC_WaveletNF_swat.png", dpi=300, bbox_inches='tight')
-                    print("Saved SWaT ROC Curve to ../figures/ROC_WaveletNF_swat.png")
+                    plt.savefig("figures/ROC_WaveletNF_swat.png", dpi=300, bbox_inches='tight')
+                    print("Saved SWaT ROC Curve to figures/ROC_WaveletNF_swat.png")
                     
                 if dataset == "wadi" and seed == 6:
                     df = pd.DataFrame([fpr, tpr]).T.round(4)
@@ -57,8 +57,8 @@ for model in ["WaveletNF", "WENFW", "WENFA", "RealNVP", "coif1", "coif2", "db1",
                     plt.title("ROC Curve for WaveletNF on WADI Dataset")
                     plt.xlabel("False Positive Rate")
                     plt.ylabel("True Positive Rate")
-                    plt.savefig("../figures/ROC_WaveletNF_wadi.png", dpi=300, bbox_inches='tight')
-                    print("Saved WADI ROC Curve to ../figures/ROC_WaveletNF_wadi.png")
+                    plt.savefig("figures/ROC_WaveletNF_wadi.png", dpi=300, bbox_inches='tight')
+                    print("Saved WADI ROC Curve to figures/ROC_WaveletNF_wadi.png")
 
                 if dataset == "PMU" and seed == 6:
                     df = pd.DataFrame([fpr, tpr]).T.round(4)
@@ -69,8 +69,8 @@ for model in ["WaveletNF", "WENFW", "WENFA", "RealNVP", "coif1", "coif2", "db1",
                     plt.title("ROC Curve for WaveletNF on PMU Dataset")
                     plt.xlabel("False Positive Rate")
                     plt.ylabel("True Positive Rate")
-                    plt.savefig("../figures/ROC_WaveletNF_PMU.png", dpi=300, bbox_inches='tight')
-                    print("Saved PMU ROC Curve to ../figures/ROC_WaveletNF_PMU.png")
+                    plt.savefig("figures/ROC_WaveletNF_PMU.png", dpi=300, bbox_inches='tight')
+                    print("Saved PMU ROC Curve to figures/ROC_WaveletNF_PMU.png")
 
             infer_time_values.append(log["Inference_Time"])
             densities.append(log["Log-Density"])
@@ -80,7 +80,7 @@ for model in ["WaveletNF", "WENFW", "WENFA", "RealNVP", "coif1", "coif2", "db1",
             f1_values.append(log["F1"])
 
 
-            log = load_json(f"../log/{model}_{dataset}_seed_{seed}/results")
+            log = load_json(f"log/{model}_{dataset}_seed_{seed}/results")
             log = dotdict(log)
             train_time.append(log["train_time"])
             
@@ -156,7 +156,7 @@ print(results.RealNVP.swat)
 print("Sensitivity Analysis Figures (Figures 6, 7, 8):")
 print("================================")
 
-print("Sensitivity Analysis on K: saved as ../figures/sensitivity_k.png")
+print("Sensitivity Analysis on K: saved as /figures/sensitivity_k.png")
 
 k_values = ["k0.05", "k0.10", "k0.15", "k0.20", "k0.25"]
 datasets = ['PMU', 'wadi', 'swat']  
@@ -181,13 +181,13 @@ plt.legend(fontsize=10, loc='best')
 plt.grid(True, alpha=0.3)
 plt.ylim(0, 1.0) 
 plt.tight_layout()
-plt.savefig('../figures/sensitivity_k.png', dpi=300, bbox_inches='tight')
+plt.savefig('figures/sensitivity_k.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 
 
 # %%
-print("Sensitivity Analysis on Wavelet Type: saved as ../figures/sensitivity_wavelet.png")
+print("Sensitivity Analysis on Wavelet Type: saved as figures/sensitivity_wavelet.png")
 wavelet_types = ["haar", "coif1", "coif2", "db1", "db2"]
 datasets = ['PMU', 'wadi', 'swat']  
 
@@ -210,11 +210,11 @@ plt.legend(fontsize=10, loc='best')
 plt.grid(True, alpha=0.3)
 plt.ylim(0, 1.0)  # AUC ranges from 0 to 1
 plt.tight_layout()
-plt.savefig('../figures/sensitivity_wavelet.png', dpi=300, bbox_inches='tight')
+plt.savefig('figures/sensitivity_wavelet.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 # %%
-print("Sensitivity Analysis on Window Size: saved as ../figures/sensitivity_window.png")
+print("Sensitivity Analysis on Window Size: saved as figures/sensitivity_window.png")
 
 window_sizes = ["window16", "window32", "window48", "window64", "window96"]
 datasets = ['PMU', 'wadi', 'swat']  
@@ -238,7 +238,7 @@ plt.legend(fontsize=10, loc='best')
 plt.grid(True, alpha=0.3)
 plt.ylim(0, 1.0)  # AUC ranges from 0 to 1
 plt.tight_layout()
-plt.savefig('../figures/sensitivity_window.png', dpi=300, bbox_inches='tight')
+plt.savefig('figures/sensitivity_window.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 # %%

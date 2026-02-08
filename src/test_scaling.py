@@ -1,5 +1,4 @@
 import os
-os.chdir("../")
 import torch
 import torch.optim as optim
 import argparse
@@ -153,12 +152,12 @@ for num_feat in num_features_range:
         })
         memory_values.append(memory * 1.04858)
         
-        print(f"K={num_feat:4d}: Total {memory:7.1f} MiB")
+        #print(f"K={num_feat:4d}: Total {memory:7.1f} MiB")
         
         if num_feat > num_features_range[0]:
             prev_mem = results[-2]['Memory_MiB']
             factor = memory / prev_mem
-            print(f"         Scaling factor: {factor:.2f}× (expect ~4× for quadratic)")
+            #print(f"         Scaling factor: {factor:.2f}× (expect ~4× for quadratic)")
         
         del model, x
         torch.cuda.empty_cache()
@@ -175,8 +174,8 @@ for num_feat in num_features_range:
         else:
             raise e
         
-print(memory_values)
+#print(memory_values)
 
 data = list(zip(num_features_range, memory_values))
 df = pd.DataFrame(data, columns=['D', 'Memory'])
-df.to_csv(f"../figures/WENFLOW_memory_values_{args.k}.csv")
+df.to_csv(f"figures/WENFLOW_memory_values_{args.k}.csv")

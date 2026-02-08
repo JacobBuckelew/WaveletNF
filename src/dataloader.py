@@ -10,7 +10,7 @@ import os
 def load_rtds(window_size, stride_size, batch_size, normalize=True):
     train_split = 0.80
 
-    train_df = pd.read_csv("../data/pmu/training/data.csv")
+    train_df = pd.read_csv("data/pmu/training/data.csv")
     train_df = train_df.set_index("Timestamp")
     train_df = train_df.drop(train_df.columns[[0]], axis=1)
     print("data length:", len(train_df))
@@ -34,7 +34,7 @@ def load_rtds(window_size, stride_size, batch_size, normalize=True):
     total = 0
     for i in range(runs):
         
-        df = pd.read_csv(f"../data/pmu/test/run{i+1}/data.csv")
+        df = pd.read_csv(f"data/pmu/test/run{i+1}/data.csv")
         df = df.set_index("Timestamp")
         T = len(df)
         print(T)
@@ -46,7 +46,7 @@ def load_rtds(window_size, stride_size, batch_size, normalize=True):
         else:
             norm_df = df
         # load labels
-        labels = pd.read_csv(f"../data/pmu/test/run{i+1}/labels.csv")
+        labels = pd.read_csv(f"data/pmu/test/run{i+1}/labels.csv")
         labels = labels.drop(labels.columns[[0]], axis=1)
         label = [0 if sum(labels.iloc[index]) == 0 else 1 for index in range(len(labels))]
         total_labels.append(label)
@@ -61,7 +61,7 @@ def load_rtds(window_size, stride_size, batch_size, normalize=True):
 
 def load_wadi(contaminated, window_size, stride_size, batch_size):
     if contaminated:
-        data = pd.read_csv("../data/wadi/WADI_attackdata.csv")
+        data = pd.read_csv("data/wadi/WADI_attackdata.csv")
         labels=[]
         train_split = 0.60
 
@@ -147,7 +147,7 @@ def load_wadi(contaminated, window_size, stride_size, batch_size):
         test_label = labels[int(0.80*len(data)):]
 
     else:
-        data = pd.read_csv("../data/wadi/WADI_normaldata.csv")
+        data = pd.read_csv("data/wadi/WADI_normaldata.csv")
         train_split = 0.80
         Timestamp = pd.to_datetime(data['Date'] + ' ' + data['Time'])
         data=data.drop(data.columns[[0,1,2,50,51,86,87]],axis=1) 
@@ -167,7 +167,7 @@ def load_wadi(contaminated, window_size, stride_size, batch_size):
         val_df = norm_feature.iloc[int(train_split * len(data)):int(len(data))]
         val_label = [0 for _ in range(len(val_df))]
 
-        test_data = pd.read_csv("../data/wadi/WADI_attackdata.csv")
+        test_data = pd.read_csv("data/wadi/WADI_attackdata.csv")
         labels=[]
         for index, row in test_data.iterrows():
             date_temp=row['Date']
@@ -257,11 +257,11 @@ def load_psm(contaminated, window_size, stride_size, batch_size,label=False):
     
     if contaminated:
         print("Loading contaminated training data")
-        data = pd.read_csv("../data/psm/test.csv")
+        data = pd.read_csv("data/psm/test.csv")
         Timestamp = pd.to_datetime(data["timestamp_(min)"])
         data["Timestamp"] = Timestamp
         data = data.set_index("Timestamp")
-        labels = pd.read_csv("../data/psm/test_label.csv")
+        labels = pd.read_csv("data/psm/test_label.csv")
         labels = labels.iloc[:,1].values
         data = data.astype(float)
         
@@ -287,7 +287,7 @@ def load_psm(contaminated, window_size, stride_size, batch_size,label=False):
     else:
 
         print("Loading clean training data")
-        train_data = pd.read_csv("../data/psm/train.csv")
+        train_data = pd.read_csv("data/psm/train.csv")
         Timestamp = pd.to_datetime(train_data["timestamp_(min)"])
         train_data["Timestamp"] = Timestamp
         train_data = train_data.set_index("Timestamp")
@@ -306,7 +306,7 @@ def load_psm(contaminated, window_size, stride_size, batch_size,label=False):
         val_label = [0 for _ in range(len(val_df))]
 
 
-        test_data = pd.read_csv("../data/psm/test.csv")
+        test_data = pd.read_csv("data/psm/test.csv")
         Timestamp = pd.to_datetime(test_data["timestamp_(min)"])
         test_data["Timestamp"] = Timestamp
         test_data = test_data.set_index("Timestamp")
@@ -317,7 +317,7 @@ def load_psm(contaminated, window_size, stride_size, batch_size,label=False):
         norm_test_feature = norm_test_feature.dropna(axis=1)
         test_df = norm_test_feature.iloc[int(0.80 *int(len(test_data))):]
         #print("test df shape:", test_df.shape)
-        labels = pd.read_csv("../data/psm/test_label.csv")
+        labels = pd.read_csv("data/psm/test_label.csv")
         labels = labels.iloc[:,1].values
         test_label = labels[int(0.80 * int(len(test_data))):]
     
@@ -340,7 +340,7 @@ def load_psm(contaminated, window_size, stride_size, batch_size,label=False):
 def load_swat(contaminated, window_size, stride, batch_size, val_split=0.80):
     
     if contaminated:
-        data = pd.read_csv("../data/swat/SWaT_Dataset_Attack_v0.csv")
+        data = pd.read_csv("data/swat/SWaT_Dataset_Attack_v0.csv")
 
         data = data.rename(columns={" Timestamp":"Timestamp"})
         data['Timestamp'] = data['Timestamp'].str.strip()
@@ -376,7 +376,7 @@ def load_swat(contaminated, window_size, stride, batch_size, val_split=0.80):
 
     else:
 
-        data = pd.read_csv("../data/swat/SWaT_Dataset_Normal_v1.csv")
+        data = pd.read_csv("data/swat/SWaT_Dataset_Normal_v1.csv")
         data = data.rename(columns={" Timestamp":"Timestamp"})
         data['Timestamp'] = data['Timestamp'].str.strip()
         Timestamp_tr = pd.to_datetime(data["Timestamp"])
@@ -397,7 +397,7 @@ def load_swat(contaminated, window_size, stride, batch_size, val_split=0.80):
         val_df = norm_train_feature.iloc[int(0.80 * len(norm_train_feature)):int(len(norm_train_feature))]
 
 
-        data = pd.read_csv("../data/swat/SWaT_Dataset_Attack_v0.csv")
+        data = pd.read_csv("data/swat/SWaT_Dataset_Attack_v0.csv")
 
         data = data.rename(columns={" Timestamp":"Timestamp"})
         data['Timestamp'] = data['Timestamp'].str.strip()
@@ -433,7 +433,7 @@ def load_smd(contaminated, dataset, window_size = 60, stride_size = 10, batch_si
 
     return shape: (([train_size, x_dim], [train_size] or None), ([test_size, x_dim], [test_size]))
     """
-    prefix = "../data/smd/"
+    prefix = "data/smd/"
     x_dim = 38
     
     if contaminated:
@@ -444,7 +444,7 @@ def load_smd(contaminated, dataset, window_size = 60, stride_size = 10, batch_si
         except (KeyError, FileNotFoundError):
             print("Data not found")
             test_data = None
-        prefix = "../data/smd/labels"
+        prefix = "data/smd/labels"
         try:
             f = open(os.path.join(prefix, dataset + "_test_label.pkl"), "rb")
             test_label = pickle.load(f).reshape((-1))[test_start:]
@@ -499,7 +499,7 @@ def load_smd(contaminated, dataset, window_size = 60, stride_size = 10, batch_si
         except (KeyError, FileNotFoundError):
             print("Data not found")
             test_data = None
-        prefix = "../data/smd/labels"
+        prefix = "data/smd/labels"
         try:
             f = open(os.path.join(prefix, dataset + "_test_label.pkl"), "rb")
             test_label = pickle.load(f).reshape((-1))[test_start:]

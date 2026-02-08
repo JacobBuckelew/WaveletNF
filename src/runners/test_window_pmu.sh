@@ -1,7 +1,7 @@
-sizes="16 32 48 64 96"
+sizes="32 48 64 96"
 for seed in {6..8}; do
     for size in $sizes; do
-    CUDA_VISIBLE_DEVICES=0 python3 ../test.py\
+    CUDA_VISIBLE_DEVICES=0 python3 src/test.py\
        --batch_size=512\
         --window_size=${size}\
         --num_blocks=1\

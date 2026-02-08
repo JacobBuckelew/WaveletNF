@@ -37,7 +37,7 @@ wavenf = WaveletEnhancedNF(num_blocks= 1,
 #wavenf = wavenf.to(device)
 
 model_name = "WaveletNF_PMU_seed_6"
-checkpt_path = os.path.join('../checkpoint', model_name)
+checkpt_path = os.path.join('checkpoint', model_name)
 checkpt_path = checkpt_path + "/best_params.pt"
 print("Loading weights from ", checkpt_path)
 
@@ -518,7 +518,7 @@ class CascadeProgressionAnalyzer:
         return stats['overlaps'], stats['mean'], stats['std']
 
 
-def plot_cascade_progression(cascade_results, save_path='../figures/cascade_progression.png'):
+def plot_cascade_progression(cascade_results, save_path='figures/cascade_progression.png'):
     """
     Create comprehensive visualization of cascade progression overlaps
     
@@ -928,7 +928,7 @@ class MultiSimulationSyntheticNoiseAnalyzer:
 
 
 def plot_multi_sim_synthetic_results(aggregated_results, simulation_results,
-                                     save_path='../figures/topk_overlap_histogram.png'):
+                                     save_path='figures/topk_overlap_histogram.png'):
     """
     Visualize synthetic noise results across multiple simulations
     """

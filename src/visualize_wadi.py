@@ -4,7 +4,7 @@ from datetime import datetime
 import pandas as pd
 
 # load data
-data = pd.read_csv("../data/wadi/WADI_attackdata.csv")
+data = pd.read_csv("data/wadi/WADI_attackdata.csv")
 labels=[]
 train_split = 0.60
 
@@ -115,7 +115,7 @@ def save_json(obj, path):
     with open(path, 'w') as f:
         json.dump(obj, f, cls=NpEncoder, indent=4)
 
-test_results = load_json("../figures/wadi_likelihoods")
+test_results = load_json("figures/wadi_likelihoods")
 
 likelihoods = test_results["likelihoods"]
 timestamp_labels = test_results["labels"]
@@ -198,9 +198,9 @@ subset_df.columns = ["Pump Status", "Pressure", "Flow", "Likelihoods", "time"]
 for i, column in enumerate(subset_df.columns[:-1]):  # Exclude 'timestamp' and 'steps'
     subset_df[column].plot(ax=axes[i])
     axes[i].set_ylabel(column)
-subset_df.to_csv("../figures/wadi_data.csv")
+subset_df.to_csv("figures/wadi_data.csv")
 axes[-1].set_xlabel('Index')  # Label for the bottom plot
-plt.savefig("../figures/wadi_example.png")
+plt.savefig("figures/wadi_example.png")
 plt.tight_layout()
 plt.show()
 

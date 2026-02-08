@@ -46,8 +46,6 @@ class Encoder(nn.Module):
         self.num_sensors = num_sensors
         self.k = k
         self.window_length = window_length
-        print("wavelet:", use_wavelet)
-        print("use_attention:", use_attention)
         self.use_wavelet = use_wavelet
         self.use_attention = use_attention
         # attention layer
