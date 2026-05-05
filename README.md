@@ -1,5 +1,24 @@
 # Artifact Evaluation Documentation
 
+## Paper and BibTeX Citation
+
+Check out the link below and download the PDF of our full paper (including appendices):
+https://scopelab.ai/files/iccps2026_wenflow.pdf
+
+
+If you choose to cite our paper, please use the following BibTeX entry:
+
+```bibtex
+@inproceedings{iccps2026_wenflow,
+  author = {Buckelew, Jacob and Talusan, Jose Paolo and Sivaramakrishnan, Vasavi and Mukhopadhyay, Ayan and Srivastava, Anurag and Dubey, Abhishek},
+  title = {WENFlow: Scalable Attention for Unsupervised Spatiotemporal Anomaly Detection in High-Dimensional Cyber-Physical Systems},
+  year = {2026},
+  booktitle = {Proceedings of the HSCC/ICCPS 2026: 29th ACM International Conference on Hybrid Systems: Computation and Control and 17th ACM/IEEE International Conference on Cyber-Physical Systems},
+  location = {Saint Malo, France},
+  series = {HSCC/ICCPS '26}
+}
+```
+
 ## Requirements and Setup
 
 ### System Requirements
