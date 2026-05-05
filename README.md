@@ -3,7 +3,7 @@
 ## Paper and BibTeX Citation
 
 Check out the link below and download the PDF of our full paper (including appendices):
-https://scopelab.ai/files/iccps2026_wenflow.pdf
+https://scopelab.ai/pub-summaries/iccps2026_wenflow/ 
 
 
 If you choose to cite our paper, please use the following BibTeX entry:
